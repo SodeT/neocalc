@@ -9,6 +9,7 @@ import (
 
 
 // Rebuilds the input string from the ast, this assumes that the tokenizer works, otherwise these tests will fail aswell
+// TODO: make it check the actuall tree becauce this test does not find all errors in the tree
 func rebuildInput(node *utils.ASTNode) string {
 	res := ""
 	switch node.Class {

@@ -2,8 +2,9 @@ package tokenizer
 
 import (
 	"fmt"
-	"strings"
 	"neocalc/src/utils"
+	"strings"
+	"unicode"
 )
 
 const (
@@ -31,7 +32,10 @@ func Tokenize(input string) []utils.Token {
 
 		if litClass != getLitClass(ch) || litClass == -1 {
 			if len(tok) != 0 {
-				output = append(output, utils.NewToken(tok, litClass))
+				output = append(output, utils.Token{
+					Token: tok,
+					Class: litClass,
+				})
 			}
 			litClass = getLitClass(ch)
 			tok = string(ch)
@@ -39,13 +43,20 @@ func Tokenize(input string) []utils.Token {
 			tok += string(ch)
 		}
 	}
-	output = append(output, utils.NewToken(tok, litClass))
+	output = append(output, utils.Token{
+		Token: tok,
+		Class: litClass,
+	})
 	return output
 }
 
 func getLitClass(ch rune) int {
 	if strings.Contains(NUMBERS, string(ch)) {
 		return utils.NUMBER_LIT
+	} else if unicode.IsLower(ch) {
+		return utils.FUNCTION_LIT
+	} else if unicode.IsUpper(ch) {
+		return utils.VARIABLE_LIT
 	}
 
 	switch ch {
@@ -57,6 +68,8 @@ func getLitClass(ch rune) int {
 		return utils.MULTIPLICATION_LIT
 	case '/':
 		return utils.DIVISION_LIT
+	case '^':
+		return utils.POWER_LIT
 	case '(':
 		return utils.LPAREN_LIT
 	case ')':

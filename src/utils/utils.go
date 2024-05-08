@@ -1,15 +1,29 @@
 package utils
 
+
+// the order of the literals is important, higher values corespond to higher precedene
 const (
 	UNUSED_LIT = iota
-	NUMBER_LIT
-	FUNCTION_LIT
-	VARIABLE_LIT
-	ADDITION_LIT
-	SUBTRACTION_LIT
-	MULTIPLICATION_LIT
+
+	// binary literals
+	NONBINARY_LIT
+	POWER_LIT
 	DIVISION_LIT
+	MULTIPLICATION_LIT
+	SUBTRACTION_LIT
+	ADDITION_LIT
 	EQUALITY_LIT
+
+	// nonbinary literals
+	NUMBER_LIT
+	VARIABLE_LIT
+
+
+	// TODO: implement these
+	PREBUILT_LIT
+	FUNCTION_LIT
+
+	MODULO_LIT
 	LPAREN_LIT
 	RPAREN_LIT
 )
@@ -17,16 +31,13 @@ const (
 type Token struct {
 	Token string
 	Class int
-	InTree bool
-}
-
-func NewToken(token string, class int) Token {
-	return Token{Token: token, Class: class, InTree: false}
+	Prebuild *ASTNode
 }
 
 type ASTNode struct {
 	Class int
 	Value float64
+	Identifier string
 	Left *ASTNode
 	Right *ASTNode
 	Parameters []ASTNode
