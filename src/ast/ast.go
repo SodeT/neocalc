@@ -1,13 +1,97 @@
 package ast
 
 import (
+	"fmt"
 	"log"
 	"neocalc/src/utils"
 	"strconv"
 )
 
-func Parse(toks []utils.Token) *utils.ASTNode {
-	return getBinary(toks, utils.EQUALITY_LIT)
+var (
+	pl = fmt.Println
+)
+
+func Parse(tokens []utils.Token) *utils.ASTNode {
+	tokens = preprocess(tokens)
+	return getBinary(tokens, utils.EQUALITY_LIT)
+}
+
+func preprocess(tokens []utils.Token) []utils.Token {
+	for i := 0; i < len(tokens); i++ {
+		tok := tokens[i]
+		if tok.Class == utils.FUNCTION_LIT {
+			funcToken, end := buildFunc(tokens, i)
+			tokens[i] = funcToken
+			tokens = append(tokens[:i+1], tokens[end+1:]...)
+			continue
+		} else if tok.Class == utils.LPAREN_LIT {
+			subtreeTok, end := prebuild(tokens, i)
+			tokens[i] = subtreeTok
+			tokens = append(tokens[:i+1], tokens[end+1:]...)
+			continue
+		}
+
+	}
+	return tokens
+}
+
+func prebuild(tokens []utils.Token, start int) (utils.Token, int) {
+	end := start
+	parenDepth := 0
+	for i := start; i < len(tokens); i++ {
+		if tokens[i].Class == utils.LPAREN_LIT {
+			parenDepth++
+		} else if tokens[i].Class == utils.RPAREN_LIT {
+			parenDepth--
+		}
+
+		if parenDepth == 0 {
+			end = i
+			break
+		}
+	}
+	subtree := Parse(tokens[start+1:end])
+	return utils.Token{
+		Class: utils.PREBUILT_LIT,
+		Subtree: subtree,
+	}, end
+}
+
+func buildFunc(tokens []utils.Token, start int) (utils.Token, int) {
+	node := &utils.ASTNode{
+		Class: utils.FUNCTION_LIT,
+		Identifier: tokens[start].Token,
+	}
+
+	start += 2 // skipping the function identifier and first parenthesis
+	end := start
+	parenDepth := 1
+	for i := start; i < len(tokens); i++ {
+		if tokens[i].Class == utils.LPAREN_LIT {
+			parenDepth++
+		} else if tokens[i].Class == utils.RPAREN_LIT {
+			parenDepth--
+		}
+
+		if parenDepth == 0 {
+			end = i
+			break
+		}
+
+		if tokens[i].Class == utils.SEPARATOR_LIT && parenDepth == 1 {
+			param := tokens[start:i]
+			start = i + 1
+			node.Parameters = append(node.Parameters, *Parse(param))
+			
+		}
+	}
+	param := tokens[start:end]
+	node.Parameters = append(node.Parameters, *Parse(param))
+	
+	return utils.Token{
+		Class: utils.PREBUILT_LIT,
+		Subtree: node,
+	}, end
 }
 
 func getBinary(toks []utils.Token, litClass int) *utils.ASTNode {
@@ -95,6 +179,8 @@ func tokenToNode(token utils.Token) *utils.ASTNode {
 			Class: utils.VARIABLE_LIT,
 			Identifier: token.Token,
 		}
+	case utils.PREBUILT_LIT:
+		return token.Subtree
 	default:
 		return &utils.ASTNode{}
 	}

@@ -76,6 +76,8 @@ func getLitClass(ch rune) int {
 		return utils.RPAREN_LIT
 	case '=':
 		return utils.EQUALITY_LIT
+	case ',':
+		return utils.SEPARATOR_LIT
 	default:
 		return -1
 	}

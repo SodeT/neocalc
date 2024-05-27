@@ -18,20 +18,21 @@ const (
 	NUMBER_LIT
 	VARIABLE_LIT
 
-
-	// TODO: implement these
+	// prebuilt ast tree when encountering parenthesis
 	PREBUILT_LIT
-	FUNCTION_LIT
-
-	MODULO_LIT
 	LPAREN_LIT
 	RPAREN_LIT
+
+	FUNCTION_LIT
+	SEPARATOR_LIT
+
+	MODULO_LIT
 )
 
 type Token struct {
 	Token string
 	Class int
-	Prebuild *ASTNode
+	Subtree *ASTNode
 }
 
 type ASTNode struct {
