@@ -29,6 +29,8 @@ const (
 	MODULO_LIT
 )
 
+var OriginalInput string
+
 type Token struct {
 	Token string
 	Class int
@@ -43,3 +45,4 @@ type ASTNode struct {
 	Right *ASTNode
 	Parameters []ASTNode
 }
+

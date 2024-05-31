@@ -2,45 +2,90 @@ package storage
 
 import (
 	"encoding/csv"
-	"strconv"
-	"errors"
+	"fmt"
 	"os"
+	"strconv"
 )
 
-func StoreVariable(name string, value float64) error {
-	file, err := os.Open("variables.csv")
+var (
+	pl = fmt.Println
+)
+
+// TODO: Implement these functions again so that they actually work...
+func SaveVariable(identifier string, value float64) error {
+	file, err := os.OpenFile("variables.csv", os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		file, err = os.Create("variables.csv")
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	defer file.Close()
-	csv := csv.NewWriter(file)
-	defer csv.Flush()
+	csvFile := csv.NewWriter(file)
+	defer csvFile.Flush()
 
 	strValue := strconv.FormatFloat(value, 'f', -1, 64)
-	csv.Write([]string{name, strValue})
+	err = csvFile.Write([]string{identifier, strValue})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func ReadVariable(name string) (float64, error) {
-	file, err := os.Open("variables.csv")
+func SaveFunction(identifier string, body string) error {
+	file, err := os.OpenFile("functions.csv", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer file.Close()
-	csv := csv.NewReader(file)
+	csvFile := csv.NewWriter(file)
+	defer csvFile.Flush()
 
-	content, err := csv.ReadAll()
+	err = csvFile.Write([]string{identifier, body})
 	if err != nil {
-		return 0, err
+		return err
+	}
+	return nil
+}
+
+func LoadFunctions() ([]string, error) {
+	file, err := os.Open("functions.csv")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	csvFile := csv.NewReader(file)
+
+	content, err := csvFile.ReadAll()
+	if err != nil {
+		return nil, err
 	}
 
+	ret := []string{}
 	for _, row := range content {
-		if row[0] == name {
-			return strconv.ParseFloat(row[1], 64)
+		ret = append(ret, row[1])
+	}
+	return ret, nil
+}
+
+func LoadVariables() (map[string]float64, error) {
+	file, err := os.Open("variables.csv")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	csvFile := csv.NewReader(file)
+
+	content, err := csvFile.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make(map[string]float64)
+	for _, row := range content {
+		ret[row[0]], err = strconv.ParseFloat(row[1], 64)
+		if err != nil {
+			return nil, err
 		}
 	}
-	return 0, errors.New("Variable not found...")
+	return ret, nil
 }
+
+

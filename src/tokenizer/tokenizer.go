@@ -30,6 +30,8 @@ func Tokenize(input string) []utils.Token {
 			continue
 		}
 
+// BUG: this globbs characters of the same type, two consecutive paranthesis will be treated as one parenthesis
+// 5(45/(3+2)) => 5(45/(3+2) # mising parenthesis may cause wierd behaviour
 		if litClass != getLitClass(ch) || litClass == -1 {
 			if len(tok) != 0 {
 				output = append(output, utils.Token{

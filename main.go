@@ -1,3 +1,8 @@
+// TODO:
+// implement a runtime logging system to log warnings, errors and general information to the user
+// implement integrals and derivative solvers
+// switch to a arbitrary precision math lbrary (math/big)
+
 package main
 
 import (
@@ -5,6 +10,7 @@ import (
 	"neocalc/src/ast"
 	"neocalc/src/runtime"
 	"neocalc/src/tokenizer"
+	"neocalc/src/utils"
 )
 
 var (
@@ -12,16 +18,14 @@ var (
 )
 
 func main() {
-	runInput("PI = 3.1415")
-	runInput("f(X,Y)=3X+Y*PI")
-	runInput("f(3, 1)")
+	runInput("f(A)")
 }
 
 func runInput(input string) float64 {
+	utils.OriginalInput = input
 	toks := tokenizer.Tokenize(input)
 	ast := ast.Parse(toks)
 	ans := runtime.Execute(ast)
-	pl(input)
 	pl(">>>", ans)
 	return ans
 }
