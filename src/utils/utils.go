@@ -17,19 +17,19 @@ const (
 	// nonbinary literals
 	NUMBER_LIT
 	VARIABLE_LIT
+	FUNCTION_LIT
 
 	// prebuilt ast tree when encountering parenthesis
 	PREBUILT_LIT
 	LPAREN_LIT
 	RPAREN_LIT
 
-	FUNCTION_LIT
 	SEPARATOR_LIT
 
-	MODULO_LIT
+	MODULO_LIT // TODO: implement this one
 )
 
-var OriginalInput string
+var Input string
 
 type Token struct {
 	Token string
@@ -46,3 +46,19 @@ type ASTNode struct {
 	Parameters []ASTNode
 }
 
+const (
+	NIL_LOG = iota
+	INFO_LOG
+	WARN_LOG
+	ERR_LOG
+)
+
+type Message struct {
+	Level int
+	Message string
+}
+
+var NilMsg = Message{
+	Level: NIL_LOG,
+	Message: "",
+}

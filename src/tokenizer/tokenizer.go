@@ -24,23 +24,29 @@ func Tokenize(input string) []utils.Token {
 	chars := []rune(input)
 	tok := ""
 	litClass := getLitClass(chars[0])
+	newTok := false
 
 	for _, ch := range chars {
 		if ch == ' ' {
 			continue
 		}
 
-// BUG: this globbs characters of the same type, two consecutive paranthesis will be treated as one parenthesis
-// 5(45/(3+2)) => 5(45/(3+2) # mising parenthesis may cause wierd behaviour
-		if litClass != getLitClass(ch) || litClass == -1 {
-			if len(tok) != 0 {
-				output = append(output, utils.Token{
-					Token: tok,
-					Class: litClass,
-				})
-			}
+		if litClass != getLitClass(ch) || litClass == utils.UNUSED_LIT || newTok {
+			newTok = false
+			output = append(output, utils.Token{
+				Token: tok,
+				Class: litClass,
+			})
+
 			litClass = getLitClass(ch)
 			tok = string(ch)
+
+			switch litClass {
+			case utils.NUMBER_LIT, utils.VARIABLE_LIT, utils.FUNCTION_LIT:
+				newTok = false
+			default:
+				newTok = true
+			}
 		} else {
 			tok += string(ch)
 		}
@@ -81,7 +87,7 @@ func getLitClass(ch rune) int {
 	case ',':
 		return utils.SEPARATOR_LIT
 	default:
-		return -1
+		return utils.UNUSED_LIT
 	}
 }
 

@@ -135,7 +135,7 @@ func getBinary(toks []utils.Token, litClass int) *utils.ASTNode {
 func getNonBinary(tokens []utils.Token) *utils.ASTNode {
 	if len(tokens) == 1 {
 		return tokenToNode(tokens[0])
-	} else if len(tokens) == 0 { // left side of a "-2" or "+5", place a 0 there
+	} else if len(tokens) == 0 {
 		return &utils.ASTNode{
 			Class: utils.NUMBER_LIT,
 			Value: 0,
