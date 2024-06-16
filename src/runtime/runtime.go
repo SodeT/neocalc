@@ -8,15 +8,15 @@ import (
 
 var (
 	pl = fmt.Println
-	variables = make(map[string]float64)
-	functions = make(map[string]utils.ASTNode)
+	Variables = make(map[string]float64)
+	Functions = make(map[string]utils.ASTNode)
 	predefinedVar = []string{"PI", "E"}
 	predefinedFunc = []string{"sin", "asin", "cos", "acos", "tan", "atan", "sec", "csc", "cot", "sinh", "asinh", "cosh", "acosh", "tanh", "atanh", "log", "ln"}
 )
 
 func Execute(head *utils.ASTNode) (float64, utils.Message) {
-	variables["PI"] = 3.141592653589793
-	variables["E"] = 2.718281828459045
+	Variables["PI"] = 3.141592653589793
+	Variables["E"] = 2.718281828459045
 
 	return evaluateNode(head)
 }
@@ -26,12 +26,12 @@ func evaluateNode(node *utils.ASTNode) (float64, utils.Message) {
 	case utils.NUMBER_LIT:
 		return node.Value, utils.NilMsg
 	case utils.VARIABLE_LIT:
-		return variables[node.Identifier], utils.NilMsg
+		return Variables[node.Identifier], utils.NilMsg
 	case utils.FUNCTION_LIT:
 		if inSlice(node.Identifier, predefinedFunc) {
 			return callFunc(node)
 		}
-		fun := functions[node.Identifier]
+		fun := Functions[node.Identifier]
 		if len(node.Parameters) != len(fun.Parameters) {
 			// INFO: it will not crash but might not be intended output, should prob be a error
 			return 0, utils.Message{
@@ -42,10 +42,10 @@ func evaluateNode(node *utils.ASTNode) (float64, utils.Message) {
 		// set all the variables
 		for i, param := range fun.Parameters {
 			val, msg := evaluateNode(&node.Parameters[i])
-			if msg.Level != utils.ERR_LOG {
+			if msg.Level == utils.ERR_LOG {
 				return 0, msg
 			}
-			variables[param.Identifier] = val
+			Variables[param.Identifier] = val
 		}
 		return evaluateNode(fun.Right)
 
@@ -55,7 +55,7 @@ func evaluateNode(node *utils.ASTNode) (float64, utils.Message) {
 	default:
 		// all the operators that require only left and right
 		left, right, msg := getLeftRight(node)
-		if msg.Level != utils.ERR_LOG {
+		if msg.Level == utils.ERR_LOG {
 			return 0, msg
 		}
 		switch node.Class {
@@ -90,10 +90,10 @@ func defineIdentifer(node *utils.ASTNode) utils.Message {
 
 	if node.Left.Class == utils.VARIABLE_LIT {
 		val, msg := evaluateNode(node.Right)
-		if msg.Level != utils.ERR_LOG {
+		if msg.Level == utils.ERR_LOG {
 			return msg
 		}
-		variables[node.Left.Identifier] = val
+		Variables[node.Left.Identifier] = val
 		/*
 		err := storage.SaveVariable(node.Left.Identifier, val)
 		if err != utils.NilMsg {
@@ -103,7 +103,7 @@ func defineIdentifer(node *utils.ASTNode) utils.Message {
 	} else if node.Left.Class == utils.FUNCTION_LIT {
 		fun := node.Left
 		fun.Right = node.Right
-		functions[fun.Identifier] = *fun
+		Functions[fun.Identifier] = *fun
 		/*
 		err := storage.SaveFunction(fun.Identifier, utils.OriginalInput)
 		if err != utils.NilMsg {
@@ -115,7 +115,7 @@ func defineIdentifer(node *utils.ASTNode) utils.Message {
 }
 
 func callFunc(node *utils.ASTNode) (float64, utils.Message) {
-	// INFO: built in functions can only take one argument, atan2 may therfore be problematic
+	// INFO: built in functions can only take one argument, note to self when implementing other functions
 	if len(node.Parameters) != 1 {
 		return 0, utils.Message{
 			Level: utils.ERR_LOG,
@@ -124,7 +124,7 @@ func callFunc(node *utils.ASTNode) (float64, utils.Message) {
 	}
 
 	x, msg := evaluateNode(&node.Parameters[0])
-	if msg.Level != utils.ERR_LOG {
+	if msg.Level == utils.ERR_LOG {
 		return 0, msg
 	}
 
@@ -169,7 +169,7 @@ func callFunc(node *utils.ASTNode) (float64, utils.Message) {
 	default:
 		msg = utils.Message{
 			Level: utils.WARN_LOG,
-			Message: "This built in function has not been implemented, please submit a bug report...",
+			Message: "The specified function was not recognized...",
 		}
 	}
 	return res, msg
@@ -188,21 +188,17 @@ func getLeftRight(node *utils.ASTNode) (float64, float64, utils.Message) {
 	if node.Left == nil || node.Right == nil {
 		return 0, 0, utils.Message{
 			Level: utils.ERR_LOG,
-			Message: "Left or right operand...",
+			Message: "Missing left or right operand...",
 		}
 	}
 
-	pl("LEFTRIGHT:")
-	pl(node.Left)
-	pl(node.Right)
-
 	left, msg := evaluateNode(node.Left)
-	if msg.Level != utils.ERR_LOG {
+	if msg.Level == utils.ERR_LOG {
 		return 0, 0, msg
 	}
 
 	right, msg := evaluateNode(node.Right)
-	if msg.Level != utils.ERR_LOG {
+	if msg.Level == utils.ERR_LOG {
 		return 0, 0, msg
 	}
 
