@@ -1,7 +1,6 @@
 package tokenizer
 
 import (
-	"fmt"
 	"neocalc/src/utils"
 	"strings"
 	"unicode"
@@ -9,10 +8,6 @@ import (
 
 const (
 	NUMBERS = "0123456789."
-)
-
-var (
-	pl = fmt.Println
 )
 
 func Tokenize(input string) []utils.Token {

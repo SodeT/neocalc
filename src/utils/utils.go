@@ -62,3 +62,39 @@ var NilMsg = Message{
 	Level: NIL_LOG,
 	Message: "",
 }
+
+var HelpText string = `
+Usage: neocalc [options]
+
+neocalc - A modern more feature rich replacement of calc
+
+Options:
+  -h, --help                 Show this help message and exit
+  -v, --version              Show the program version and exit
+
+  -i, --input FILE           Specify the input file
+
+
+Examples:
+  neocalc -i math.txt -o results.txt
+  ; f(X) = 5(X+2) - 3X
+  ; #solve X f(X) = 0
+  >>> -5
+  ; area(R) = PI*R^2
+  ; A = area(5)
+  ; #deriv R 5 area(R)
+  >>> 157.0796483747472
+
+
+Description:
+  Neocalc is a CLI calculator that interperets mathematical expressions and evaluates them.
+
+Notes:
+  - Variables are defined by uppercase letters
+    * A = 5
+    * SIZE = 128
+  - Functions are defined by lowercase letters followed by their parameters
+    * f(X) = 5X
+	* sigmoid(X) = E^X / (1+E^X)
+  - Every trigonometric funtion is already defined and the constants PI and E are also defined (note that 'E' is uppercase)
+`

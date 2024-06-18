@@ -1,13 +1,11 @@
 package runtime
 
 import (
-	"fmt"
 	"neocalc/src/utils"
 	"math"
 )
 
 var (
-	pl = fmt.Println
 	Variables = make(map[string]float64)
 	Functions = make(map[string]utils.ASTNode)
 	predefinedVar = []string{"PI", "E"}
@@ -26,20 +24,26 @@ func evaluateNode(node *utils.ASTNode) (float64, utils.Message) {
 	case utils.NUMBER_LIT:
 		return node.Value, utils.NilMsg
 	case utils.VARIABLE_LIT:
-		return Variables[node.Identifier], utils.NilMsg
+		val := Variables[node.Identifier]
+		if val == 0 && len(node.Identifier) > 1 {
+			return val, utils.Message{
+				Level: utils.INFO_LOG,
+				Message: "Possible misinterpretation of variable, \"" + node.Identifier + "\" treated as one variable... (AB != A*B)",
+			}
+		}
+		return val, utils.NilMsg
 	case utils.FUNCTION_LIT:
 		if inSlice(node.Identifier, predefinedFunc) {
 			return callFunc(node)
 		}
 		fun := Functions[node.Identifier]
 		if len(node.Parameters) != len(fun.Parameters) {
-			// INFO: it will not crash but might not be intended output, should prob be a error
 			return 0, utils.Message{
 				Level: utils.WARN_LOG,
 				Message: "Incorrect number of parameters...",
 			}
-		}
-		// set all the variables
+			}
+			// set all the variables
 		for i, param := range fun.Parameters {
 			val, msg := evaluateNode(&node.Parameters[i])
 			if msg.Level == utils.ERR_LOG {
@@ -79,7 +83,6 @@ func evaluateNode(node *utils.ASTNode) (float64, utils.Message) {
 	}
 }
 
-// TODO: make storing variables work
 func defineIdentifer(node *utils.ASTNode) utils.Message {
 	if inSlice(node.Left.Identifier, append(predefinedVar, predefinedFunc...)) {
 		return utils.Message{
@@ -94,22 +97,11 @@ func defineIdentifer(node *utils.ASTNode) utils.Message {
 			return msg
 		}
 		Variables[node.Left.Identifier] = val
-		/*
-		err := storage.SaveVariable(node.Left.Identifier, val)
-		if err != utils.NilMsg {
-			panic(err)
-		}
-		*/
+
 	} else if node.Left.Class == utils.FUNCTION_LIT {
 		fun := node.Left
 		fun.Right = node.Right
 		Functions[fun.Identifier] = *fun
-		/*
-		err := storage.SaveFunction(fun.Identifier, utils.OriginalInput)
-		if err != utils.NilMsg {
-			panic(err)
-		}
-		*/
 	}
 	return utils.NilMsg
 }

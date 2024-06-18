@@ -1,14 +1,9 @@
 package ast
 
 import (
-	"fmt"
 	"log"
 	"neocalc/src/utils"
 	"strconv"
-)
-
-var (
-	pl = fmt.Println
 )
 
 func Parse(tokens []utils.Token) *utils.ASTNode {
